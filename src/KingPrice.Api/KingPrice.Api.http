@@ -1,0 +1,56 @@
+@baseUrl = http://localhost:5090
+@contentType = application/json
+
+### 
+### CREATE USER
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Collins",
+  "lastName": "South"
+}
+
+###
+
+### GET ALL USERS
+GET {{baseUrl}}/api/users
+Accept: {{contentType}}
+
+###
+
+### GET USER BY ID
+GET {{baseUrl}}/api/users/1
+Accept: {{contentType}}
+
+###
+
+### UPDATE USER
+PUT {{baseUrl}}/api/users/1
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Jonathan",
+  "lastName": "Doe",
+  "groupNames": ["New"]
+}
+
+### 
+### DELETE USER
+DELETE {{baseUrl}}/api/users/3
+Accept: {{contentType}}
+
+### 
+### GET TOTAL USER COUNT
+GET {{baseUrl}}/api/users/stats/total-count
+Accept: {{contentType}}
+
+###
+### GET USERS PER GROUP
+GET {{baseUrl}}/api/users/stats/users-per-group
+Accept: {{contentType}}
+
+###
+
+
+
