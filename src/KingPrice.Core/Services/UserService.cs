@@ -173,7 +173,7 @@ public class UserService(AppDbContext context) : IUserService
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            GroupIds = user.Groups.Where(g => g != null).Select(g => g!.Id).ToList(),
+            Groups = user.Groups.Select(g => g!.Name).ToList(),
         };
     }
 }

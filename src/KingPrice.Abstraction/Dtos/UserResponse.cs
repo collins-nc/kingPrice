@@ -5,6 +5,6 @@ namespace KingPrice.Abstraction.Dtos
         public int Id { get; set; }
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
-        public List<int> GroupIds { get; set; } = [];
+        public List<string> Groups { get; set; } = [];
     }
 }

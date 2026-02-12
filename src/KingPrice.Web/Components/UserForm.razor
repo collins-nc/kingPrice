@@ -72,7 +72,7 @@
             FirstName = user.FirstName, 
             LastName = user.LastName 
         };
-        groupString = string.Join(", ", user.GroupIds.Select(g => g.ToString()));
+        groupString = string.Join(", ", user.Groups.Select(g => g));
         isVisible = true;
         StateHasChanged();
     }

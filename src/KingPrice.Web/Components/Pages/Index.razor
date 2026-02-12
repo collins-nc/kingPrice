@@ -47,11 +47,11 @@
                                 <div class="fw-bold">@user.FirstName @user.LastName</div>
                             </td>
                             <td>
-                                @if (user.GroupIds.Any())
+                                @if (user.Groups.Any())
                                 {
-                                    @foreach (var group in user.GroupIds)
+                                    @foreach (var group in user.Groups)
                                     {
-                                        <span class="badge rounded-pill bg-info text-dark me-1">@group.ToString()</span>
+                                        <span class="badge rounded-pill bg-info text-dark me-1">@group</span>
                                     }
                                 }
                                 else
