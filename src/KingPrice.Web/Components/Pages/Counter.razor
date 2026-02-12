@@ -1,19 +1,107 @@
 ﻿@page "/counter"
+@using KingPrice.Abstraction.Dtos
+@inject IUserApiClient UserApiClient
 @rendermode InteractiveServer
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>User Statistics</PageTitle>
 
-<h1>Counter</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">System Statistics</h1>
 
-<p role="status">Current count: @currentCount</p>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-1">Total Users</h6>
+                            <h2 class="display-4 fw-bold">@totalUserCount</h2>
+                        </div>
+                        <i class="bi bi-people-fill fs-1"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between small">
+                    <button class="btn btn-sm btn-light" @onclick="RefreshStats">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+        @* Users Per Group Table *@
+        <div class="col-md-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Users Per Group</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Group Name</th>
+                                <th class="text-center">Member Count</th>
+                                <th style="width: 40%">Distribution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (groupStats == null)
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div> Loading stats...
+                                    </td>
+                                </tr>
+                            }
+                            else if (!groupStats.Any())
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">No group data available.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var stat in groupStats)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@stat.GroupName</td>
+                                        <td class="text-center">@stat.UserCount</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-info" 
+                                                     role="progressbar" 
+                                                     style="width: @(CalculatePercentage(stat.UserCount))%">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
-    private int currentCount = 0;
+    private int totalUserCount = 0;
+    private List<UsersPerGroupResponse>? groupStats;
 
-    private void IncrementCount()
+    protected override async Task OnInitializedAsync()
     {
-        currentCount++;
+        await RefreshStats();
+    }
+
+    private async Task RefreshStats()
+    {
+        totalUserCount = await UserApiClient.GetTotalUserCountAsync();
+        groupStats = await UserApiClient.GetUsersPerGroupAsync();
+    }
+
+    private double CalculatePercentage(int count)
+    {
+        if (totalUserCount == 0) return 0;
+        return (double)count / totalUserCount * 100;
     }
 }
