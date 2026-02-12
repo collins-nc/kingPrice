@@ -13,7 +13,6 @@
                     <button type="button" class="btn-close" @onclick="Hide"></button>
                 </div>
                 
-                @* Step 1: Wrap in EditForm and point to the Save method *@
                 <EditForm Model="@userModel" OnValidSubmit="Save">
                     <DataAnnotationsValidator />
                     
@@ -50,9 +49,9 @@
 @code {
     [Parameter] public EventCallback OnSaved { get; set; }
 
-    private bool isVisible = false;
-    private bool isSaving = false;
-    private int? editingId = null;
+    private bool isVisible;
+    private bool isSaving;
+    private int? editingId;
     private CreateUserRequest userModel = new();
     private string groupString = "";
 
@@ -108,7 +107,7 @@
                 await UserApiClient.UpdateUserAsync(editingId.Value, updateRequest);
             }
 
-            await OnSaved.InvokeAsync(); // Notify Index.razor to refresh list
+            await OnSaved.InvokeAsync();
             Hide();
         }
         catch (Exception ex)

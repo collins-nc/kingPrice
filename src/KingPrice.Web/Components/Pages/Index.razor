@@ -1,7 +1,7 @@
 @page "/"
 @using KingPrice.Abstraction.Dtos
 @inject IUserApiClient UserApiClient
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 @rendermode InteractiveServer
 
 <div class="container mt-4">
@@ -47,7 +47,7 @@
                                 <div class="fw-bold">@user.FirstName @user.LastName</div>
                             </td>
                             <td>
-                                @if (user.GroupIds != null && user.GroupIds.Any())
+                                @if (user.GroupIds.Any())
                                 {
                                     @foreach (var group in user.GroupIds)
                                     {
@@ -103,7 +103,7 @@
 
     private async Task DeleteUser(int id)
     {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this user?");
+        var confirmed = await Js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this user?");
         if (confirmed)
         {
             var success = await UserApiClient.DeleteUserAsync(id);
