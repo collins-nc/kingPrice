@@ -1,10 +1,10 @@
-namespace KingPrice.Core;
+namespace KingPrice.Web;
 
 using Abstraction.Dtos;
 
-public interface IUserService
+public interface IUserApiClient
 {
-    Task<UserResponse> CreateUserAsync(CreateUserRequest request);
+    Task<UserResponse?> CreateUserAsync(CreateUserRequest request);
     Task<UserResponse?> GetUserByIdAsync(int id);
     Task<List<UserResponse>> GetAllUsersAsync();
     Task<UserResponse?> UpdateUserAsync(int id, UpdateUserRequest request);

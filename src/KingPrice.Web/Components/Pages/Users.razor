@@ -1,0 +1,143 @@
+@page "/"
+@using KingPrice.Abstraction.Dtos
+@inject IUserApiClient ApiClient
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Users</PageTitle>
+
+<div class="container mt-4">
+    <h1>Users Management</h1>
+
+    <button class="btn btn-primary mb-3" @onclick="ShowCreate">
+        <span class="oi oi-plus"></span> Add User
+    </button>
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info" role="alert">
+            <em>Loading users...</em>
+        </div>
+    }
+    else if (!users.Any())
+    {
+        <div class="alert alert-warning" role="alert">
+            No users found. <a href="#" @onclick="ShowCreate">Create one now.</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Groups</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in users)
+                    {
+                        <tr>
+                            <td>@user.Id</td>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>
+                                @if (user.GroupIds != null && user.GroupIds.Any())
+                                {
+                                    @string.Join(", ", user.GroupIds.Select(g => g.ToString()))
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No groups</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" @onclick="() => ShowEdit(user)" title="Edit">
+                                    <span class="oi oi-pencil"></span>
+                                </button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => Delete(user.Id)" title="Delete">
+                                    <span class="oi oi-trash"></span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+</div>
+
+<UserForm @ref="userForm" OnSaved="Reload" />
+
+@code {
+    private List<UserResponse> users = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+    private UserForm? userForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            users = await ApiClient.GetAllUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load users: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowCreate() => userForm?.ShowCreate();
+
+    private void ShowEdit(object user) => userForm?.ShowEdit(user);
+
+    private async Task Delete(int id)
+    {
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this user?"))
+            return;
+
+        try
+        {
+            var success = await ApiClient.DeleteUserAsync(id);
+            if (success)
+            {
+                await LoadUsers();
+            }
+            else
+            {
+                errorMessage = "Failed to delete user.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting user: {ex.Message}";
+        }
+    }
+
+    private async Task Reload()
+    {
+        await LoadUsers();
+    }
+}

@@ -20,4 +20,8 @@
       </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\KingPrice.Abstraction\KingPrice.Abstraction.csproj" />
+    </ItemGroup>
+
 </Project>

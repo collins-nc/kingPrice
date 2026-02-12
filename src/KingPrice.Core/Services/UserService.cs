@@ -1,7 +1,7 @@
 namespace KingPrice.Core.Services ;
 
+using Abstraction.Dtos;
 using Entities;
-using KingPrice.Core.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -13,33 +13,33 @@ public class UserService(AppDbContext context) : IUserService
 
         // Handle groups - create if doesn't exist, otherwise fetch existing
         if (request.GroupNames.Count > 0)
+        {
+            foreach (var groupName in request.GroupNames)
             {
-                foreach (var groupName in request.GroupNames)
+                // Check if group already exists
+                var existingGroup = await context.Groups
+                    .FirstOrDefaultAsync(g => g.Name == groupName);
+
+                if (existingGroup != null)
                 {
-                    // Check if group already exists
-                    var existingGroup = await context.Groups
-                        .FirstOrDefaultAsync(g => g.Name == groupName);
-
-                    if (existingGroup != null)
-                    {
-                        // Group exists, use it
-                        groups.Add(existingGroup);
-                    }
-                    else
-                    {
-                        // Group doesn't exist, create new one
-                        var newGroup = new Group
-                        {
-                            Name = groupName,
-                        };
-                        groups.Add(newGroup);
-                        context.Groups.Add(newGroup);
-                    }
+                    // Group exists, use it
+                    groups.Add(existingGroup);
                 }
-
-                // Save groups before creating user
-                await context.SaveChangesAsync();
+                else
+                {
+                    // Group doesn't exist, create new one
+                    var newGroup = new Group
+                    {
+                        Name = groupName,
+                    };
+                    groups.Add(newGroup);
+                    context.Groups.Add(newGroup);
+                }
             }
+
+            // Save groups before creating user
+            await context.SaveChangesAsync();
+        }
 
         // Create user with groups
         var user = new User

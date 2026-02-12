@@ -1,4 +1,4 @@
-namespace KingPrice.Core.DTOs
+namespace KingPrice.Abstraction.Dtos
 {
     public class UsersPerGroupResponse
     {

@@ -1,6 +1,6 @@
-namespace KingPrice.Core.DTOs
+namespace KingPrice.Abstraction.Dtos
 {
-    public class UpdateUserRequest
+    public class CreateUserRequest
     {
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;

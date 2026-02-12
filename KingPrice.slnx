@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/KingPrice.Abstraction/KingPrice.Abstraction.csproj" />
     <Project Path="src/KingPrice.Api/KingPrice.Api.csproj" />
     <Project Path="src/KingPrice.AppHost/KingPrice.AppHost.csproj" />
     <Project Path="src/KingPrice.Core/KingPrice.Core.csproj" />

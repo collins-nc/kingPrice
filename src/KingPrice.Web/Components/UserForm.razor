@@ -1,0 +1,220 @@
+@using KingPrice.Abstraction.Dtos
+@using System.ComponentModel.DataAnnotations
+@inject IUserApiClient ApiClient
+@inject IJSRuntime JsRuntime
+
+<div class="modal fade @(isVisible ? "show d-block" : "")" tabindex="-1" style="@(isVisible ? "background: rgba(0,0,0,0.3);" : "display:none;")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@title</h5>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="Hide" disabled="@isSaving"></button>
+            </div>
+            <div class="modal-body">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @errorMessage
+                        <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                    </div>
+                }
+
+                <EditForm Model="model" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label class="form-label">First Name <span class="text-danger">*</span></label>
+                        <InputText 
+                            class="form-control" 
+                            @bind-Value="model.FirstName" 
+                            disabled="@isSaving"
+                            placeholder="Enter first name" />
+                        <ValidationMessage For="() => model.FirstName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <InputText 
+                            class="form-control" 
+                            @bind-Value="model.LastName" 
+                            disabled="@isSaving"
+                            placeholder="Enter last name" />
+                        <ValidationMessage For="() => model.LastName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Groups <span class="text-muted">(Optional)</span></label>
+                        <InputText 
+                            class="form-control" 
+                            @bind-Value="groupText" 
+                            disabled="@isSaving"
+                            placeholder="Enter group names separated by commas" />
+                        <small class="form-text text-muted d-block mt-1">
+                            Example: <code>Development, Marketing, Sales</code>
+                        </small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <span>Save</span>
+                            }
+                        </button>
+                        <button class="btn btn-secondary" type="button" @onclick="Hide" disabled="@isSaving">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isVisible;
+    private bool isSaving;
+    private string title = "";
+    private string? errorMessage;
+
+    public class UserFormModel
+    {
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
+        public string LastName { get; set; } = string.Empty;
+
+        public List<string> GroupNames { get; set; } = new();
+    }
+
+    private UserFormModel model = new();
+    private string? groupText;
+    private int? editingId;
+
+    [Parameter] 
+    public EventCallback OnSaved { get; set; }
+
+    public void ShowCreate()
+    {
+        isVisible = true;
+        title = "Create New User";
+        model = new UserFormModel();
+        groupText = string.Empty;
+        editingId = null;
+        errorMessage = null;
+        StateHasChanged();
+    }
+
+    public void ShowEdit(object userObj)
+    {
+        try
+        {
+            // Handle UserResponse from the API
+            if (userObj is UserResponse user)
+            {
+                isVisible = true;
+                title = $"Edit User - {user.FirstName} {user.LastName}";
+                editingId = user.Id;
+                model = new UserFormModel
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    GroupNames = user.GroupIds?.Select(g => g.ToString()).ToList() ?? new List<string>()
+                };
+                groupText = string.Join(", ", model.GroupNames);
+                errorMessage = null;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading user for edit: {ex.Message}";
+        }
+    }
+
+    public void Hide()
+    {
+        isVisible = false;
+        errorMessage = null;
+        StateHasChanged();
+    }
+
+    private async Task Save()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            // Parse groups from comma-separated input
+            model.GroupNames = (groupText ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+
+            if (editingId == null)
+            {
+                // Create new user
+                var request = new CreateUserRequest
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    GroupNames = model.GroupNames
+                };
+
+                var result = await ApiClient.CreateUserAsync(request);
+                if (result != null)
+                {
+                    await OnSaved.InvokeAsync();
+                    Hide();
+                }
+                else
+                {
+                    errorMessage = "Failed to create user. Please try again.";
+                }
+            }
+            else
+            {
+                // Update existing user
+                var request = new UpdateUserRequest
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    GroupNames = model.GroupNames
+                };
+
+                var result = await ApiClient.UpdateUserAsync(editingId.Value, request);
+                if (result != null)
+                {
+                    await OnSaved.InvokeAsync();
+                    Hide();
+                }
+                else
+                {
+                    errorMessage = "Failed to update user. Please try again.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private bool HasFieldErrors(string fieldName)
+    {
+        return false;
+    }
+}

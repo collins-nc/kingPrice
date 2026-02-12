@@ -1,7 +1,7 @@
 namespace KingPrice.Api.Endpoints
 {
+    using Abstraction.Dtos;
     using KingPrice.Core;
-    using KingPrice.Core.DTOs;
     using Microsoft.AspNetCore.Http.HttpResults;
 
     public static class UserEndpoints
