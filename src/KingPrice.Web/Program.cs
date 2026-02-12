@@ -8,7 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Configure HttpClient for API communication
-var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "https://localhost:5090";
+var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5090";
 
 builder.Services.AddHttpClient<IUserApiClient, UserApiClient>(client =>
     {
