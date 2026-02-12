@@ -14,4 +14,6 @@ builder.AddProject<Projects.KingPrice_Api>("api", launchProfileName:"http")
     .WithReference(sqlDb)
     .WaitFor(sqlDb);
 
+builder.AddProject<Projects.KingPrice_Web>("web");
+
 builder.Build().Run();

@@ -3,5 +3,6 @@
     <Project Path="src/KingPrice.Api/KingPrice.Api.csproj" />
     <Project Path="src/KingPrice.AppHost/KingPrice.AppHost.csproj" />
     <Project Path="src/KingPrice.Core/KingPrice.Core.csproj" />
+    <Project Path="src/KingPrice.Web/KingPrice.Web.csproj" />
   </Folder>
 </Solution>
