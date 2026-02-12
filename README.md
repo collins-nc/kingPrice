@@ -69,7 +69,7 @@ The current `appsettings.json` configuration for database operations is as follo
    aspire run
    ```
 2. After running, a **Dashboard link** will be provided in the terminal. Click the link to open the application in your browser.
-3. To run the frontend, click the link on the linegit  **Web Resource** in the terminal.
+3. To run the frontend, click the link on the line aligned to **Web Resource** in the terminal.
 
 ---
 
